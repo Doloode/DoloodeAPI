@@ -1,0 +1,51 @@
+DESAFIO
+
+#Instalação das Dependências
+
+pip install fastapi uvicorn pymongo motor pytest 
+
+#Configuração do MongoDB
+
+from pydantic import BaseModel
+from typing import Optional
+
+class Atleta(BaseModel):
+    nome: str
+    cpf: str
+    centro_treinamento: Optional[str] = None
+    categoria: Optional[str] = None
+
+#Configuração da Aplicação FastAPI
+
+from fastapi import FastAPI
+from app.routes import router
+
+app = FastAPI()
+
+app.include_router(router)
+#Configuração do Pytest
+
+from fastapi.testclient import TestClient
+from app.main import app
+
+client = TestClient(app)
+
+def test_create_atleta():
+    response = client.post("/atletas", json={
+        "nome": "João Silva",
+        "cpf": "12345678901",
+        "centro_treinamento": "Centro A",
+        "categoria": "Categoria 1"
+    })
+    assert response.status_code == 200
+    assert response.json() == {
+        "nome": "João Silva",
+        "cpf": "12345678901",
+        "centro_treinamento": "Centro A",
+        "categoria": "Categoria 1"
+    }
+
+def test_get_atletas():
+    response = client.get("/atletas")
+    assert response.status_code == 200
+    assert len(response.json()) > 0
